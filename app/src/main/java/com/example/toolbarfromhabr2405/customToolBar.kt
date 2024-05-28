@@ -1,10 +1,12 @@
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -20,6 +22,7 @@ import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
@@ -74,12 +77,13 @@ fun CollapsingHeader() {
             // Collapsable top composable
             Header(modifier = Modifier.onSizeChanged { headerSize = it })
             // Composable that will take top of the screen when the list is scrolled up
-            Tabs(modifier = Modifier.onSizeChanged { tabsSize = it })
         }
         LazyColumn(
-            contentPadding = PaddingValues(top = headerHeight + tabsHeight)
+            contentPadding = PaddingValues(top = headerHeight + tabsHeight,
+                bottom = 56.dp  // Добавляем нижний отступ для видимости последнего элемента
+                )
         ) {
-            items(100) { index ->
+            items(101) { index ->
                 Text(
                     text = "Item $index",
                     modifier = Modifier
@@ -100,24 +104,13 @@ fun Header(
             .fillMaxWidth()
             .background(Color.LightGray)
     ) {
-        Text("Collapsing header")
-        Row(Modifier.fillMaxWidth()) {
-            OutlinedTextField(value = "", onValueChange = {})
-            Button(onClick = {}) { Text("Search") }
-        }
-    }
-}
 
-@Composable
-fun Tabs(
-    modifier: Modifier
-) {
-    Column(modifier = modifier) {
-        Text("Something")
-        TabRow(selectedTabIndex = 0) {
-            Tab(selected = true, onClick = {}) { Text("Tab 0") }
-            Tab(selected = false, onClick = {}) { Text("Tab 1") }
-            Tab(selected = false, onClick = {}) { Text("Tab 2") }
+        Row(Modifier.fillMaxWidth().height(60.dp).padding(top = 20.dp),
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically
+            ) {
+            Box() {Text("Collapsing header")}
+
         }
     }
 }
