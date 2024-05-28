@@ -1,6 +1,6 @@
 package com.example.toolbarfromhabr2405
 
-import CustomToolbar
+import CollapsingHeader
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -20,7 +20,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             ToolBarfromHabr2405Theme {
-                CustomToolbar{Text("My Custom Toolbar")}
+                CollapsingHeader()
             }
         }
     }
