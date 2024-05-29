@@ -10,11 +10,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Tab
-import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -29,11 +25,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.zIndex
@@ -41,54 +35,46 @@ import kotlin.math.roundToInt
 
 @Composable
 fun CollapsingHeader() {
-    val density = LocalDensity.current
 
-    var headerSize by remember { mutableStateOf(IntSize(0, 0)) }
-    val headerHeight by remember(headerSize) { mutableStateOf(with(density) { headerSize.height.toDp() }) }
+    var headerSize by remember { mutableStateOf(IntSize(0, 0)) } // Запоминаем размер заголовка
 
-    var tabsSize by remember { mutableStateOf(IntSize(0, 0)) }
-    val tabsHeight by remember(tabsSize) { mutableStateOf(with(density) { tabsSize.height.toDp() }) }
-
-    val headerOffsetHeightPx = remember { mutableFloatStateOf(0f) }
+    val headerOffsetHeightPx = remember { mutableFloatStateOf(0f) } // Запоминаем текущее смещение заголовка
     val nestedScrollConnection = remember(headerSize) {
         object : NestedScrollConnection {
-            val headerHeightPx = headerSize.height.toFloat()
+            val headerHeightPx = headerSize.height.toFloat() // Преобразуем высоту заголовка в пиксели
 
             override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
-                val delta = available.y
-                val newOffset = headerOffsetHeightPx.floatValue + delta
-                headerOffsetHeightPx.floatValue = newOffset.coerceIn(-headerHeightPx, 0f)
-                return Offset.Zero
+                val delta = available.y // Получаем смещение по оси Y
+                val newOffset = headerOffsetHeightPx.floatValue + delta // Вычисляем новое смещение заголовка
+                headerOffsetHeightPx.floatValue = newOffset.coerceIn(-headerHeightPx, 0f) // Ограничиваем смещение в пределах от -высоты заголовка до 0
+                return Offset.Zero // Возвращаем смещение 0, так как все движение обработано
             }
         }
     }
     Box(
         modifier = Modifier
-            .fillMaxSize()
-            .nestedScroll(nestedScrollConnection)
+            .fillMaxSize() // Заполняем весь размер контейнера
+            .nestedScroll(nestedScrollConnection) // Добавляем возможность вложенного скролла
     ) {
         Column(
             modifier = Modifier
-                // Set zIndex to appear above LazyColumn. Alternatively, put LazyColumn above this Column
-                .zIndex(1f)
-                .offset { IntOffset(x = 0, y = headerOffsetHeightPx.floatValue.roundToInt()) }
-                .background(MaterialTheme.colorScheme.surface),
+                .zIndex(1f) // Устанавливаем zIndex для отображения над LazyColumn
+                .offset { IntOffset(x = 0, y = headerOffsetHeightPx.floatValue.roundToInt()) } // Смещаем заголовок по оси Y
+                .background(MaterialTheme.colorScheme.surface) // Устанавливаем фоновый цвет из темы
         ) {
-            // Collapsable top composable
-            Header(modifier = Modifier.onSizeChanged { headerSize = it })
-            // Composable that will take top of the screen when the list is scrolled up
+            Header(modifier = Modifier.onSizeChanged { headerSize = it }) // Вызываем Header и сохраняем его размер
         }
         LazyColumn(
-            contentPadding = PaddingValues(top = headerHeight + tabsHeight,
-                bottom = 56.dp  // Добавляем нижний отступ для видимости последнего элемента
-                )
+            contentPadding = PaddingValues(
+                bottom = 56.dp // Добавляем нижний отступ для видимости последнего элемента
+            )
         ) {
             items(101) { index ->
                 Text(
-                    text = "Item $index",
+                    text = "Item $index", // Текст элемента списка
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp)
+                        .fillMaxWidth() // Заполняем всю ширину
+                        .padding(16.dp) // Добавляем внутренний отступ
                 )
             }
         }
@@ -101,16 +87,20 @@ fun Header(
 ) {
     Column(
         modifier = modifier
-            .fillMaxWidth()
-            .background(Color.LightGray)
+            .fillMaxWidth() // Заполняем всю ширину
+            .background(Color.LightGray) // Устанавливаем светло-серый фоновый цвет
     ) {
-
-        Row(Modifier.fillMaxWidth().height(60.dp).padding(top = 20.dp),
-            horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.CenterVertically
-            ) {
-            Box() {Text("Collapsing header")}
-
+        Row(
+            modifier = Modifier
+                .fillMaxWidth() // Заполняем всю ширину
+                .height(60.dp) // Устанавливаем фиксированную высоту
+                .padding(top = 20.dp), // Добавляем верхний отступ
+            horizontalArrangement = Arrangement.Center, // Выровняем содержимое по горизонтали по центру
+            verticalAlignment = Alignment.CenterVertically // Выровняем содержимое по вертикали по центру
+        ) {
+            Box {
+                Text("ТОНКАЯ НАСТРОЙКА") // Текст заголовка
+            }
         }
     }
 }
