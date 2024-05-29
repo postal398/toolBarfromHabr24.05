@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -58,6 +59,7 @@ fun CollapsingHeader() {
     ) {
         Column(
             modifier = Modifier
+                .statusBarsPadding()
                 .zIndex(1f) // Устанавливаем zIndex для отображения над LazyColumn
                 .offset { IntOffset(x = 0, y = headerOffsetHeightPx.floatValue.roundToInt()) } // Смещаем заголовок по оси Y
                 .background(MaterialTheme.colorScheme.surface) // Устанавливаем фоновый цвет из темы
@@ -69,7 +71,7 @@ fun CollapsingHeader() {
                 bottom = 56.dp // Добавляем нижний отступ для видимости последнего элемента
             )
         ) {
-            items(101) { index ->
+            items(100) { index ->
                 Text(
                     text = "Item $index", // Текст элемента списка
                     modifier = Modifier
