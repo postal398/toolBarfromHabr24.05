@@ -1,4 +1,6 @@
+import android.app.Activity
 import androidx.compose.foundation.background
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -7,13 +9,14 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -23,64 +26,97 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.zIndex
+import androidx.core.view.WindowCompat
 import kotlin.math.roundToInt
 
 @Composable
 fun CollapsingHeader() {
 
-    var headerSize by remember { mutableStateOf(IntSize(0, 0)) } // Запоминаем размер заголовка
+    val density = LocalDensity.current
+    val statusBarHeight = with(density) { 24.dp.toPx() }  // Высота статус-бара
 
-    val headerOffsetHeightPx = remember { mutableFloatStateOf(0f) } // Запоминаем текущее смещение заголовка
+    var headerSize by remember { mutableStateOf(IntSize(0, 0)) }
+    val headerHeight by remember(headerSize) { mutableStateOf(with(density) { headerSize.height.toDp() }) }
+
+    val headerOffsetHeightPx = remember { mutableFloatStateOf(0f) }
     val nestedScrollConnection = remember(headerSize) {
         object : NestedScrollConnection {
-            val headerHeightPx = headerSize.height.toFloat() // Преобразуем высоту заголовка в пиксели
+            val headerHeightPx = headerSize.height.toFloat()
 
             override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
-                val delta = available.y // Получаем смещение по оси Y
-                val newOffset = headerOffsetHeightPx.floatValue + delta // Вычисляем новое смещение заголовка
-                headerOffsetHeightPx.floatValue = newOffset.coerceIn(-headerHeightPx, 0f) // Ограничиваем смещение в пределах от -высоты заголовка до 0
-                return Offset.Zero // Возвращаем смещение 0, так как все движение обработано
+                val delta = available.y
+                val newOffset = headerOffsetHeightPx.floatValue + delta
+                // Ограничиваем смещение, чтобы заголовок не наезжал на статус-бар
+                headerOffsetHeightPx.floatValue = newOffset.coerceIn(-(headerHeightPx - statusBarHeight), 0f)
+                return Offset.Zero
             }
         }
     }
+
     Box(
         modifier = Modifier
-            .fillMaxSize() // Заполняем весь размер контейнера
-            .nestedScroll(nestedScrollConnection) // Добавляем возможность вложенного скролла
+            .fillMaxSize()
+            .nestedScroll(nestedScrollConnection)
+
     ) {
         Column(
             modifier = Modifier
-                .statusBarsPadding()
-                .zIndex(1f) // Устанавливаем zIndex для отображения над LazyColumn
-                .offset { IntOffset(x = 0, y = headerOffsetHeightPx.floatValue.roundToInt()) } // Смещаем заголовок по оси Y
-                .background(MaterialTheme.colorScheme.surface) // Устанавливаем фоновый цвет из темы
+                .zIndex(1f)
+                .offset { IntOffset(x = 0, y = headerOffsetHeightPx.floatValue.roundToInt()) }
+                .background(MaterialTheme.colorScheme.surface)
+                .padding(top = 24.dp) // Отступ для статус-бара
         ) {
-            Header(modifier = Modifier.onSizeChanged { headerSize = it }) // Вызываем Header и сохраняем его размер
+            Header(modifier = Modifier.onSizeChanged { headerSize = it })
         }
+
         LazyColumn(
             contentPadding = PaddingValues(
-                bottom = 56.dp // Добавляем нижний отступ для видимости последнего элемента
+                top = headerHeight + 24.dp,  // Добавляем высоту статус-бара
+                bottom = 56.dp
             )
         ) {
             items(100) { index ->
                 Text(
-                    text = "Item $index", // Текст элемента списка
+                    text = "Item $index",
                     modifier = Modifier
-                        .fillMaxWidth() // Заполняем всю ширину
-                        .padding(16.dp) // Добавляем внутренний отступ
+                        .fillMaxWidth()
+                        .padding(16.dp)
                 )
             }
         }
     }
+
+//    val statusBarLight = Color.Black //статус бар в светлой теме
+//    val statusBarDark = Color.Red //хз
+//    val navigationBarLight = Color.Black //цвет дедовского ниженего бара
+//    val navigationBarDark = Color.White
+//    val view = LocalView.current
+//    val isDarkMod = isSystemInDarkTheme()
+//
+//    DisposableEffect(isDarkMod) {
+//        val activity = view.context as Activity
+//        activity.window.statusBarColor = if(isDarkMod){statusBarDark.toArgb()} else {statusBarLight.toArgb()}
+//        activity.window.navigationBarColor = if(isDarkMod){navigationBarDark.toArgb()} else {navigationBarLight.toArgb()}
+//
+//        WindowCompat.getInsetsController(activity.window, activity.window.decorView).apply {
+//            isAppearanceLightStatusBars = !isDarkMod
+//            isAppearanceLightNavigationBars = !isDarkMod
+//        }
+//
+//        onDispose { }
+//    }
+
 }
 
 @Composable
@@ -89,19 +125,20 @@ fun Header(
 ) {
     Column(
         modifier = modifier
-            .fillMaxWidth() // Заполняем всю ширину
-            .background(Color.LightGray) // Устанавливаем светло-серый фоновый цвет
+            .fillMaxWidth()
+            .background(Color.LightGray)
+            .imePadding()
     ) {
         Row(
             modifier = Modifier
-                .fillMaxWidth() // Заполняем всю ширину
-                .height(60.dp) // Устанавливаем фиксированную высоту
-                .padding(top = 20.dp), // Добавляем верхний отступ
-            horizontalArrangement = Arrangement.Center, // Выровняем содержимое по горизонтали по центру
-            verticalAlignment = Alignment.CenterVertically // Выровняем содержимое по вертикали по центру
+                .fillMaxWidth()
+                .height(60.dp)
+                .padding(top = 20.dp),
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically
         ) {
             Box {
-                Text("ТОНКАЯ НАСТРОЙКА") // Текст заголовка
+                Text("Collapsing header")
             }
         }
     }
