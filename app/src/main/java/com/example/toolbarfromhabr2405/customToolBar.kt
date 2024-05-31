@@ -6,13 +6,19 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material3.Button
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -67,7 +73,11 @@ fun CollapsingHeader() {
     Box(
         modifier = Modifier
             .fillMaxSize()
+            .windowInsetsPadding(WindowInsets.statusBars)
             .nestedScroll(nestedScrollConnection)
+
+//            .padding(top = 30.dp)
+//            .statusBarsPadding()
 
     ) {
         Column(
@@ -75,14 +85,14 @@ fun CollapsingHeader() {
                 .zIndex(1f)
                 .offset { IntOffset(x = 0, y = headerOffsetHeightPx.floatValue.roundToInt()) }
                 .background(MaterialTheme.colorScheme.surface)
-                .padding(top = 24.dp) // Отступ для статус-бара
+//                .padding(top = 24.dp) // Отступ для статус-бара
         ) {
             Header(modifier = Modifier.onSizeChanged { headerSize = it })
         }
 
         LazyColumn(
             contentPadding = PaddingValues(
-                top = headerHeight + 24.dp,  // Добавляем высоту статус-бара
+                top = headerHeight + 24.dp,
                 bottom = 56.dp
             )
         ) {
@@ -97,25 +107,6 @@ fun CollapsingHeader() {
         }
     }
 
-//    val statusBarLight = Color.Black //статус бар в светлой теме
-//    val statusBarDark = Color.Red //хз
-//    val navigationBarLight = Color.Black //цвет дедовского ниженего бара
-//    val navigationBarDark = Color.White
-//    val view = LocalView.current
-//    val isDarkMod = isSystemInDarkTheme()
-//
-//    DisposableEffect(isDarkMod) {
-//        val activity = view.context as Activity
-//        activity.window.statusBarColor = if(isDarkMod){statusBarDark.toArgb()} else {statusBarLight.toArgb()}
-//        activity.window.navigationBarColor = if(isDarkMod){navigationBarDark.toArgb()} else {navigationBarLight.toArgb()}
-//
-//        WindowCompat.getInsetsController(activity.window, activity.window.decorView).apply {
-//            isAppearanceLightStatusBars = !isDarkMod
-//            isAppearanceLightNavigationBars = !isDarkMod
-//        }
-//
-//        onDispose { }
-//    }
 
 }
 
@@ -127,17 +118,31 @@ fun Header(
         modifier = modifier
             .fillMaxWidth()
             .background(Color.LightGray)
-            .imePadding()
     ) {
+        LinearProgressIndicator(
+            progress = 0.8f, // Установка прогресса на 80%
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(14.dp) // Установка высоты прогресс-бара
+        )
+        Row(
+            modifier = Modifier.fillMaxWidth(), // Заполняем ширину экрана
+            horizontalArrangement = Arrangement.SpaceBetween, // Кнопки будут расположены слева и справа
+            verticalAlignment = Alignment.Top
+        ) {
+            Button(onClick = { /*TODO*/ }) {}
+            Button(onClick = { /*TODO*/ }) {}
+
+        }
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(60.dp)
+                .height(130.dp) //высота статус-бара
                 .padding(top = 20.dp),
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Box {
+            Box() {
                 Text("Collapsing header")
             }
         }
