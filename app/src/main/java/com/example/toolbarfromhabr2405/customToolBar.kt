@@ -36,35 +36,65 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.zIndex
 import androidx.core.view.WindowCompat
+import kotlin.math.absoluteValue
 import kotlin.math.roundToInt
 
 @Composable
 fun CollapsingHeader() {
 
     val density = LocalDensity.current
-    val statusBarHeight = with(density) { 24.dp.toPx() }  // Высота статус-бара
+    val statusBarHeight = with(density) { 44.dp.toPx() }  // Высота хедера
 
-    var headerSize by remember { mutableStateOf(IntSize(0, 0)) }
-    val headerHeight by remember(headerSize) { mutableStateOf(with(density) { headerSize.height.toDp() }) }
+//    var maxHeaderHeight by remember { mutableStateOf(IntSize(0, 0)) }
+    var maxHeaderHeight by remember { mutableStateOf(with(density) { 130.dp.toPx() }) }
+    var minHeaderHeight by remember { mutableStateOf(with(density) { 35.dp.toPx() }) }
+
+    val headerHeight by remember(maxHeaderHeight) { mutableStateOf(with(density) { maxHeaderHeight.toDp() }) }
+
 
     val headerOffsetHeightPx = remember { mutableFloatStateOf(0f) }
-    val nestedScrollConnection = remember(headerSize) {
+
+    val height =
+        getHeight(
+            min = 48.dp,
+            max = with(LocalDensity.current) { maxHeaderHeight.toDp() },
+            currentDp = with(LocalDensity.current) { headerOffsetHeightPx.floatValue.toDp() })
+
+    println("height = ${height.value}")
+
+    val heightPx = with(density) { height.toPx() }
+
+    val nestedScrollConnection = remember(maxHeaderHeight) {
         object : NestedScrollConnection {
-            val headerHeightPx = headerSize.height.toFloat()
+            val headerHeightPx = maxHeaderHeight.toFloat()
 
             override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
                 val delta = available.y
+
+//                println("delta = $delta")
+
                 val newOffset = headerOffsetHeightPx.floatValue + delta
+
+//                println("newOffset = $newOffset")
+
                 // Ограничиваем смещение, чтобы заголовок не наезжал на статус-бар
-                headerOffsetHeightPx.floatValue = newOffset.coerceIn(-(headerHeightPx - statusBarHeight), 0f)
+                headerOffsetHeightPx.floatValue =
+                    newOffset.coerceIn(-(headerHeightPx - minHeaderHeight), 0f)
+
+//                headerOffsetHeightPx.floatValue = newOffset
+
+                println("header offset = ${headerOffsetHeightPx.floatValue}")
+
                 return Offset.Zero
             }
         }
@@ -73,25 +103,41 @@ fun CollapsingHeader() {
     Box(
         modifier = Modifier
             .fillMaxSize()
+            .background(Color.Black)
             .windowInsetsPadding(WindowInsets.statusBars)
+            .background(Color.Red)
             .nestedScroll(nestedScrollConnection)
 
 //            .padding(top = 30.dp)
 //            .statusBarsPadding()
 
     ) {
+
         Column(
             modifier = Modifier
                 .zIndex(1f)
-                .offset { IntOffset(x = 0, y = headerOffsetHeightPx.floatValue.roundToInt()) }
+//                .background(Color.Green)
+                .height(height)
+//                .offset { IntOffset(x = 0, y = headerOffsetHeightPx.floatValue.roundToInt()) }
+                .background(Color.Yellow)
+//                .height(height)
                 .background(MaterialTheme.colorScheme.surface)
 //                .padding(top = 24.dp) // Отступ для статус-бара
         ) {
-            Header(modifier = Modifier.onSizeChanged { headerSize = it })
+            Header(modifier = Modifier
+//                .onSizeChanged { maxHeaderHeight = it }
+//                .onGloballyPositioned {
+//                    println("onGloballyPositioned: ${it.size}")
+//                    maxHeaderHeight = it.size
+//                }
+            )
         }
 
         LazyColumn(
+            modifier = Modifier
+                .background(Color.Magenta),
             contentPadding = PaddingValues(
+//                top = height + 24.dp,
                 top = headerHeight + 24.dp,
                 bottom = 56.dp
             )
@@ -108,6 +154,19 @@ fun CollapsingHeader() {
     }
 
 
+}
+
+private fun getHeight(min: Dp, max: Dp, currentDp: Dp): Dp {
+    println("getHeight: ${min.value} || ${max.value} || current = ${currentDp.value}")
+    if (currentDp >= 0.dp) {
+        return max
+    }
+
+    if ((max.value - currentDp.value.absoluteValue) <= min.value) {
+        return min
+    }
+
+    return (max.value - currentDp.value.absoluteValue).dp
 }
 
 @Composable

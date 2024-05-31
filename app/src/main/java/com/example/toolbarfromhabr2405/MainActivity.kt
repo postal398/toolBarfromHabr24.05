@@ -17,7 +17,7 @@ import com.example.toolbarfromhabr2405.ui.theme.ToolBarfromHabr2405Theme
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
+//        enableEdgeToEdge()
         setContent {
             ToolBarfromHabr2405Theme {
                 CollapsingHeader()
