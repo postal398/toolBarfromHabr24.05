@@ -53,11 +53,12 @@ import kotlin.math.roundToInt
 fun CollapsingHeader() {
 
     val density = LocalDensity.current
-    val statusBarHeight = with(density) { 44.dp.toPx() }  // Высота хедера
 
-//    var maxHeaderHeight by remember { mutableStateOf(IntSize(0, 0)) }
     var maxHeaderHeight by remember { mutableStateOf(with(density) { 130.dp.toPx() }) }
     var minHeaderHeight by remember { mutableStateOf(with(density) { 35.dp.toPx() }) }
+
+    val headerHeightPercent = remember { mutableFloatStateOf(1f) } //замер изменений при скролле
+
 
     val headerHeight by remember(maxHeaderHeight) { mutableStateOf(with(density) { maxHeaderHeight.toDp() }) }
 
@@ -70,7 +71,7 @@ fun CollapsingHeader() {
             max = with(LocalDensity.current) { maxHeaderHeight.toDp() },
             currentDp = with(LocalDensity.current) { headerOffsetHeightPx.floatValue.toDp() })
 
-    println("height = ${height.value}")
+//    println("height = ${height.value}")
 
     val heightPx = with(density) { height.toPx() }
 
@@ -91,9 +92,14 @@ fun CollapsingHeader() {
                 headerOffsetHeightPx.floatValue =
                     newOffset.coerceIn(-(headerHeightPx - minHeaderHeight), 0f)
 
-//                headerOffsetHeightPx.floatValue = newOffset
 
-                println("header offset = ${headerOffsetHeightPx.floatValue}")
+//                println("header offset = ${headerOffsetHeightPx.floatValue}")
+
+                //Обновляем переменную с замером изменений высоты
+                headerHeightPercent.value = 1f + headerOffsetHeightPx.floatValue / (maxHeaderHeight - minHeaderHeight)
+
+                println("Header height percent = ${headerHeightPercent.value}")
+
 
                 return Offset.Zero
             }
@@ -107,10 +113,6 @@ fun CollapsingHeader() {
             .windowInsetsPadding(WindowInsets.statusBars)
             .background(Color.Red)
             .nestedScroll(nestedScrollConnection)
-
-//            .padding(top = 30.dp)
-//            .statusBarsPadding()
-
     ) {
 
         Column(
@@ -122,7 +124,6 @@ fun CollapsingHeader() {
                 .background(Color.Yellow)
 //                .height(height)
                 .background(MaterialTheme.colorScheme.surface)
-//                .padding(top = 24.dp) // Отступ для статус-бара
         ) {
             Header(modifier = Modifier
 //                .onSizeChanged { maxHeaderHeight = it }
@@ -137,7 +138,6 @@ fun CollapsingHeader() {
             modifier = Modifier
                 .background(Color.Magenta),
             contentPadding = PaddingValues(
-//                top = height + 24.dp,
                 top = headerHeight + 24.dp,
                 bottom = 56.dp
             )
@@ -157,7 +157,7 @@ fun CollapsingHeader() {
 }
 
 private fun getHeight(min: Dp, max: Dp, currentDp: Dp): Dp {
-    println("getHeight: ${min.value} || ${max.value} || current = ${currentDp.value}")
+//    println("getHeight: ${min.value} || ${max.value} || current = ${currentDp.value}")
     if (currentDp >= 0.dp) {
         return max
     }
@@ -185,7 +185,7 @@ fun Header(
                 .height(14.dp) // Установка высоты прогресс-бара
         )
         Row(
-            modifier = Modifier.fillMaxWidth(), // Заполняем ширину экрана
+            modifier = Modifier.fillMaxWidth().padding(top = 10.dp), // Заполняем ширину экрана
             horizontalArrangement = Arrangement.SpaceBetween, // Кнопки будут расположены слева и справа
             verticalAlignment = Alignment.Top
         ) {
