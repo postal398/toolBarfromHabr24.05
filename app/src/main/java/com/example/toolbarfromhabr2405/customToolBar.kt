@@ -46,11 +46,12 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.zIndex
 import androidx.core.view.WindowCompat
+import androidx.navigation.NavController
 import kotlin.math.absoluteValue
 import kotlin.math.roundToInt
 
 @Composable
-fun CollapsingHeader() {
+fun CollapsingHeader(navController: NavController) {
 
     val density = LocalDensity.current
 
